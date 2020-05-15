@@ -1,0 +1,39 @@
+Video 2 - Development Set-Up 
+
+Deactivate conda
+    deactivate conda
+    
+Create directory
+    ~/Documents/projects/powerful-python/todoserver/
+
+Populate directory
+    cp -p ~/Documents/github/livecoded-api-server/API-fixed.md ./
+    cp -p ~/Documents/github/livecoded-api-server/tests/ ./
+
+    => from:    livecoded-api-server/ 
+       to:      todoserver/
+
+Create virtual environment
+    % python3 -m venv venv
+
+Activate virtual environment
+    % source venv/bin/Activate
+
+Install flask
+    (venv) % pip install flask
+
+Create requirements file
+    (venv) % pip freeze > requirements.txt
+
+Create .gitignore
+
+Set up git
+    (venv) % git init
+    (venv) % git add .
+    (venv) % git commit -m 'Initial commit'
+
+Exit the virtual environment
+    (venv) % deactivate
+    %
+    %
+
