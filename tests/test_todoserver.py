@@ -1,6 +1,6 @@
 import json
 import unittest
-from todoserver import app, MEMORY
+from todoserver import app #, MEMORY
 
 app.testing = True
 
@@ -9,7 +9,7 @@ def json_body(resp):
 
 class TestTodoserver(unittest.TestCase):
     def setUp(self):
-        MEMORY.clear()
+        app.store.tasks.clear()
 
         self.client = app.test_client()
         resp = self.client.get("/tasks/")
