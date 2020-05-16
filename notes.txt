@@ -1,4 +1,5 @@
 Video 2 - Development Set-Up 
+============================
 
 Deactivate conda
     deactivate conda
@@ -37,3 +38,20 @@ Exit the virtual environment
     %
     %
 
+
+Video 3 - The First End-Point
+=============================
+
+Implement GET /tasks/
+    - for empty list of tasks
+
+Files
+    - todoserver.py         application code
+    - test_todoserver.py    test code (for unittest)
+
+Local test
+    (venv) % python3 -m unittest ./test_todoserver
+
+Course test
+    (venv) % python3 -m unittest \
+            ./tests/test_the_first_endpoint_1/test_todoserver
