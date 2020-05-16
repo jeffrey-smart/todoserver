@@ -3,7 +3,12 @@
 from flask import Flask, make_response, request
 import json
 
-app = Flask(__name__)
+class TodoserverApp(Flask):
+    def __init__(self, name):
+        super().__init__(name)
+
+#app = Flask(__name__)
+app = TodoserverApp(__name__)
 
 MEMORY = dict()
 
