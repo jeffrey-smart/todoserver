@@ -55,3 +55,22 @@ Local test
 Course test
     (venv) % python3 -m unittest \
             ./tests/test_the_first_endpoint_1/test_todoserver
+
+
+================================================================================
+Video 6.  Application Structure: Refactoring & Organizing
+---------------------------------------------------------
+
+0.  create 3 new directories
+    % mkdir bin lib lib/todoserver
+
+1.  move files (change file location but NOT file content)
+
+    % git mv test_todoserver.py tests/
+
+2.  create new files (e.g., #!/usr/bin/env python)
+
+3.  move lines/functions from existing files to new files
+
+4.  change logic (e.g., move MEMORY to class-based data store)
+
