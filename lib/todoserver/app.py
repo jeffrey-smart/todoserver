@@ -5,12 +5,12 @@ import json
 from .store import TaskStore
 
 class TodoserverApp(Flask):
-    def __init__(self, name):
-        self.store = TaskStore()
-        super().__init__(name)
+    def init_db(self, engine_spec):
+        self.store = TaskStore(engine_spec)
+
     def erase_all_test_data(self):
         assert self.testing
-        self.store.tasks.clear()
+        self.store._delete_all_tasks()
 
 
 
@@ -21,30 +21,21 @@ app = TodoserverApp(__name__)
 
 @app.route("/tasks/", methods=["GET"])
 def get_all_tasks():
-    tasks = [
-        {"id": task_id, "summary": task["summary"]}
-        for task_id, task in app.store.tasks.items()
-    ]
+    tasks = app.store.get_all_tasks()
     return make_response(json.dumps(tasks), 200)
 
 @app.route("/tasks/", methods=["POST"])
 def create_task():
     payload = request.get_json(force=True)
 
-    try:
-        task_id = 1 + max(app.store.tasks.keys())
-    except ValueError:
-        task_id = 1
-
-    app.store.tasks[task_id] = {
-        "summary": payload["summary"],
-        "description": payload["description"],
-    }
+    task_id = app.store.create_task(
+        summary = payload["summary"],
+        description = payload["description"],
+    )
     task_info = {"id": task_id}
     return make_response(json.dumps(task_info), 201)
 
 @app.route("/tasks/<int:task_id>/", methods=["GET"])
 def get_task_details(task_id):
-    task_info = app.store.tasks[task_id].copy()
-    task_info["id"] = task_id
+    task_info = app.store.task_details(task_id)
     return make_response(json.dumps(task_info), 200)

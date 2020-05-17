@@ -3,13 +3,14 @@ import unittest
 from todoserver import app #, MEMORY
 
 app.testing = True
+app.init_db("sqlite:///:memory:")
 
 def json_body(resp):
     return json.loads(resp.data.decode("utf-8"))
 
 class TestTodoserver(unittest.TestCase):
     def setUp(self):
-        app.store.tasks.clear()
+        app.erase_all_test_data()
 
         self.client = app.test_client()
         resp = self.client.get("/tasks/")
