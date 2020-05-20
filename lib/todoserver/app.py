@@ -38,4 +38,8 @@ def create_task():
 @app.route("/tasks/<int:task_id>/", methods=["GET"])
 def get_task_details(task_id):
     task_info = app.store.task_details(task_id)
+
+    if task_info is None:
+        return make_response("", 404)
+
     return make_response(json.dumps(task_info), 200)

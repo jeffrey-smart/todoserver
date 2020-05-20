@@ -84,3 +84,7 @@ class TestTodoserver(unittest.TestCase):
         self.assertEqual(3, len(tasks))
         for actual, expected in zip(new_tasks, tasks):
             self.assertEqual(expected["summary"], actual["summary"])
+
+    def test_error_when_getting_nonexisting_task(self):
+        resp = self.client.get("/tasks/42/")
+        self.assertEqual(404, resp.status_code)
