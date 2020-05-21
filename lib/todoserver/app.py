@@ -2,6 +2,7 @@
 
 from flask import Flask, make_response, request
 import json
+import functools
 
 from .store import (
     TaskStore,
@@ -23,24 +24,31 @@ app = TodoserverApp(__name__)
 
 # MEMORY = dict()
 
+def validate_summary(view):
+    @functools.wraps(view)
+    def wrapper(*args, **kwargs):
+        try:
+            return view(*args, **kwargs)
+        except BadSummaryError:
+            err_msg = {"error": "Summary must be under 120 chars, without newlines"}
+            return make_response(json.dumps(err_msg), 400)
+    return wrapper
+
+
 @app.route("/tasks/", methods=["GET"])
 def get_all_tasks():
     tasks = app.store.get_all_tasks()
     return make_response(json.dumps(tasks), 200)
 
 @app.route("/tasks/", methods=["POST"])
+@validate_summary
 def create_task():
     payload = request.get_json(force=True)
 
-    try:
-        task_id = app.store.create_task(
-            summary = payload["summary"],
-            description = payload["description"],
-        )
-    except BadSummaryError:
-        err_msg = {"error": "Summary must be under 120 chars, without newlines"}
-        return make_response(json.dumps(err_msg), 400)
-
+    task_id = app.store.create_task(
+        summary = payload["summary"],
+        description = payload["description"],
+    )
     task_info = {"id": task_id}
     return make_response(json.dumps(task_info), 201)
 
@@ -62,18 +70,15 @@ def delete_task(task_id):
         return make_response("", 404)
 
 @app.route("/tasks/<int:task_id>/", methods=["PUT"])
+@validate_summary
 def modify_task(task_id):
     payload = request.get_json(force=True)
 
-    try:
-        modified = app.store.modify_task(
-            task_id = task_id,
-            summary = payload["summary"],
-            description = payload["description"],
-        )
-    except BadSummaryError:
-        err_msg = {"error": "Summary must be under 120 chars, without newlines"}
-        return make_response(json.dumps(err_msg), 400)
+    modified = app.store.modify_task(
+        task_id = task_id,
+        summary = payload["summary"],
+        description = payload["description"],
+    )
         
     if modified:
         return ""
