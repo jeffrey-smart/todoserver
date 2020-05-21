@@ -144,3 +144,14 @@ class TestTodoserver(unittest.TestCase):
         actual = json_body(resp)
         self.assertEqual(updated_task_data["summary"], actual["summary"])
         self.assertEqual(updated_task_data["description"], actual["description"])
+
+    def test_error_when_updating_non_existent_task(self):
+        # modified (revised) version of the task
+        # modify (update) the task
+        updated_task_data = {
+            "summary": "Get gas",
+            "description": "Fill up with unleaded",
+        }
+        resp = self.client.put(f"/tasks/42/",
+                               data = json.dumps(updated_task_data))
+        self.assertEqual(404, resp.status_code)

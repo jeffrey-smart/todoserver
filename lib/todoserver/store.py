@@ -67,8 +67,12 @@ class TaskStore:
     def modify_task(self, task_id, summary, description):
         session = self.Session()
         task = session.query(Task).get(task_id)
-        task.summary = summary
-        task.description = description
-        session.add(task)
-        session.commit()
-        
+        if task is None:
+            modified = False
+        else:
+            modified = True
+            task.summary = summary
+            task.description = description
+            session.add(task)
+            session.commit()
+        return modified
