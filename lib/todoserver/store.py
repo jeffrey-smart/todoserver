@@ -56,6 +56,10 @@ class TaskStore:
     def delete_task(self, task_id):
         session = self.Session()
         task = session.query(Task).get(task_id)
-        session.delete(task)
-        session.commit()
-
+        if task is None:
+            deleted = False
+        else:
+            session.delete(task)
+            session.commit()
+            deleted = True
+        return deleted

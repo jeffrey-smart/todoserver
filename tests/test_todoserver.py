@@ -85,7 +85,7 @@ class TestTodoserver(unittest.TestCase):
         for actual, expected in zip(new_tasks, tasks):
             self.assertEqual(expected["summary"], actual["summary"])
 
-    def test_error_when_getting_nonexisting_task(self):
+    def test_error_when_getting_nonexistent_task(self):
         resp = self.client.get("/tasks/42/")
         self.assertEqual(404, resp.status_code)
 
@@ -109,3 +109,9 @@ class TestTodoserver(unittest.TestCase):
         # verify that task has been deleted
         resp = self.client.get(f"/tasks/{task_id:d}/")
         self.assertEqual(404, resp.status_code)
+
+    def test_error_when_deleting_nonexistent_task(self):
+        # delete the task
+        resp = self.client.delete(f"/tasks/42/")   
+        self.assertEqual(404, resp.status_code)
+        
