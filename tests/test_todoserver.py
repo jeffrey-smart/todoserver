@@ -1,6 +1,9 @@
 import json
 import unittest
+
+# pylint: disable=import-error
 from todoserver import app #, MEMORY
+# pylint: enable=import-error
 
 app.testing = True
 app.init_db("sqlite:///:memory:")
@@ -8,7 +11,19 @@ app.init_db("sqlite:///:memory:")
 def json_body(resp):
     return json.loads(resp.data.decode("utf-8"))
 
+
 class TestTodoserver(unittest.TestCase):
+    def create_test_task(self):
+        new_task_data = {
+            "summary": "Pick up bottled water",
+            "description": "Big green bottle of sparkling water",
+        }
+        resp = self.client.post("/tasks/", data=json.dumps(new_task_data))
+        assert resp.status_code == 201, print(resp.status_code)
+        assert "id" in json_body(resp), print(json_body(resp))
+        assert "id" in json_body(resp), print(json_body(resp))
+        return json_body(resp)
+
     def setUp(self):
         app.erase_all_test_data()
 
@@ -24,26 +39,12 @@ class TestTodoserver(unittest.TestCase):
 
     def test_create_a_task_and_get_its_details(self):
 
-        # verify creating a task
-        new_task = {
-            "summary": "Get milk", 
-            "description": "One gallon of whole milk",
-            }
-
-        client = app.test_client()
-
-        resp = client.post("/tasks/", data=json.dumps(new_task))
-        task_id_from_post = json_body(resp).get("id")
-        self.assertEqual(201, resp.status_code)
-        data = json_body(resp)
-        self.assertIsInstance(data, dict)
-        self.assertIn("id", data)
-        self.assertEqual(task_id_from_post, data["id"])
+        data = self.create_test_task()
 
         # verify getting task details
         task_id = data["id"]
 
-        resp = client.get(f"/tasks/{task_id:d}/")
+        resp = self.client.get(f"/tasks/{task_id:d}/")
         self.assertEqual(200, resp.status_code)
         data = json_body(resp)
         self.assertIsInstance(data, dict)
@@ -52,14 +53,13 @@ class TestTodoserver(unittest.TestCase):
         self.assertIn("description", data)
 
         self.assertEqual(task_id, data["id"])
-        self.assertEqual("Get milk", data["summary"])
-        self.assertEqual("One gallon of whole milk", 
-                         data["description"])
+        self.assertEqual("Pick up bottled water", data["summary"])
+        self.assertEqual("Big green bottle of sparkling water", data["description"])
 
     def test_create_multiple_tasks_and_retrieve_list(self):
         # create a list of tasks
         new_tasks = [
-            {"summary": "Pick up milk", 
+            {"summary": "Pick up milk",
              "description": "Half gallon of almond milk", },
             {"summary": "Fix blog", 
              "description": "Check spelling of Tucson", },
@@ -70,8 +70,7 @@ class TestTodoserver(unittest.TestCase):
         # post the list of tasks
         for new_task in new_tasks:
             with self.subTest(new_task=new_task):
-                resp = self.client.post("/tasks/", 
-                                        data=json.dumps(new_task))
+                resp = self.client.post("/tasks/", data=json.dumps(new_task))
                 self.assertEqual(201, resp.status_code)
                 data = json_body(resp)
                 self.assertIsInstance(data, dict)
@@ -90,16 +89,7 @@ class TestTodoserver(unittest.TestCase):
         self.assertEqual(404, resp.status_code)
 
     def test_delete_task(self):
-        # create a task
-        new_task_data = {
-            "summary": "Pick up bottled water",
-            "description": "Big green bottle of sparkling water",
-        }
-        resp = self.client.post("/tasks/",
-                                data=json.dumps(new_task_data)
-        )
-        self.assertEqual(201, resp.status_code)
-        task = json_body(resp)
+        task = self.create_test_task()
         task_id = task["id"]
 
         # delete the task
@@ -112,20 +102,12 @@ class TestTodoserver(unittest.TestCase):
 
     def test_error_when_deleting_nonexistent_task(self):
         # delete the task
-        resp = self.client.delete(f"/tasks/42/")   
+        resp = self.client.delete("/tasks/42/")   
         self.assertEqual(404, resp.status_code)
     
     def test_modify_existing_task(self):
         # create a task
-        new_task_data = {
-            "summary": "Pick up bottled water",
-            "description": "Big green bottle of sparkling water",
-        }
-        resp = self.client.post("/tasks/",
-                                data=json.dumps(new_task_data)
-        )
-        self.assertEqual(201, resp.status_code)
-        task = json_body(resp)
+        task = self.create_test_task()
         task_id = task["id"]
 
         # modify (update) the task
@@ -152,7 +134,7 @@ class TestTodoserver(unittest.TestCase):
             "summary": "Get gas",
             "description": "Fill up with unleaded",
         }
-        resp = self.client.put(f"/tasks/42/",
+        resp = self.client.put("/tasks/42/",
                                data = json.dumps(updated_task_data))
         self.assertEqual(404, resp.status_code)
 
@@ -171,7 +153,32 @@ class TestTodoserver(unittest.TestCase):
                 task_info = json_body(resp)
                 self.assertIn("error", task_info)
                 self.assertEqual(
-                    "summary must be less than 120 chars; newline is forbidden",
+                    "Summary must be under 120 chars, without newlines",
                     task_info["error"]
                 )
 
+    def test_error_when_updating_task_with_bad_summary(self):
+        task = self.create_test_task()
+        task_id = task["id"]
+
+        bad_summaries = [
+            "?" * 120,                  # too long
+            "Goodby \n Columbus",       # embedded newline
+        ]
+        for bad_summary in bad_summaries:
+            updated_task_data = { "summary": bad_summary,
+                                  "description": "", }
+                          
+            with self.subTest(bad_summary=bad_summary):
+                resp = self.client.put(
+                    f"/tasks/{task_id:d}/",
+                    data = json.dumps(updated_task_data)
+                )
+                self.assertEqual(400, resp.status_code)
+
+                task_info = json_body(resp)
+                self.assertIn("error", task_info)
+                self.assertEqual(
+                    "Summary must be under 120 chars, without newlines",
+                    task_info["error"]
+                )

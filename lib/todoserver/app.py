@@ -38,7 +38,7 @@ def create_task():
             description = payload["description"],
         )
     except BadSummaryError:
-        err_msg = {"error": "summary must be less than 120 chars; newline is forbidden"}
+        err_msg = {"error": "Summary must be under 120 chars, without newlines"}
         return make_response(json.dumps(err_msg), 400)
 
     task_info = {"id": task_id}
@@ -65,11 +65,16 @@ def delete_task(task_id):
 def modify_task(task_id):
     payload = request.get_json(force=True)
 
-    modified = app.store.modify_task(
-        task_id = task_id,
-        summary = payload["summary"],
-        description = payload["description"],
-    )
+    try:
+        modified = app.store.modify_task(
+            task_id = task_id,
+            summary = payload["summary"],
+            description = payload["description"],
+        )
+    except BadSummaryError:
+        err_msg = {"error": "Summary must be under 120 chars, without newlines"}
+        return make_response(json.dumps(err_msg), 400)
+        
     if modified:
         return ""
     else:

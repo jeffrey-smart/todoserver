@@ -16,6 +16,10 @@ MAX_SUMMARY_LENGTH = 119
 class BadSummaryError(Exception):
     pass
 
+def validate_summary(summary):
+    if len(summary) > MAX_SUMMARY_LENGTH or "\n" in summary:
+        raise BadSummaryError
+
 class Task(Base):
     __tablename__ = 'tasks'                     # create the table
     id = Column(Integer, primary_key=True)      # add `id` to table
@@ -35,8 +39,7 @@ class TaskStore:
         ]
 
     def create_task(self, summary, description):
-        if len(summary) > MAX_SUMMARY_LENGTH or "\n" in summary:
-            raise BadSummaryError
+        validate_summary(summary)
 
         session = self.Session()
         task = Task(summary=summary, description=description)
@@ -73,6 +76,8 @@ class TaskStore:
         return deleted
 
     def modify_task(self, task_id, summary, description):
+        validate_summary(summary)
+
         session = self.Session()
         task = session.query(Task).get(task_id)
         if task is None:
@@ -83,4 +88,5 @@ class TaskStore:
             task.description = description
             session.add(task)
             session.commit()
+            
         return modified
