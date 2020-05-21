@@ -21,7 +21,6 @@ class TestTodoserver(unittest.TestCase):
         resp = self.client.post("/tasks/", data=json.dumps(new_task_data))
         assert resp.status_code == 201, print(resp.status_code)
         assert "id" in json_body(resp), print(json_body(resp))
-        assert "id" in json_body(resp), print(json_body(resp))
         return json_body(resp)
 
     def setUp(self):

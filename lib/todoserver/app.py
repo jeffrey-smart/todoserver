@@ -18,11 +18,7 @@ class TodoserverApp(Flask):
         self.store._delete_all_tasks()
 
 
-
-#app = Flask(__name__)
 app = TodoserverApp(__name__)
-
-# MEMORY = dict()
 
 def validate_summary(view):
     @functools.wraps(view)
@@ -33,7 +29,6 @@ def validate_summary(view):
             err_msg = {"error": "Summary must be under 120 chars, without newlines"}
             return make_response(json.dumps(err_msg), 400)
     return wrapper
-
 
 @app.route("/tasks/", methods=["GET"])
 def get_all_tasks():
