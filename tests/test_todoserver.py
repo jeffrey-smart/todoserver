@@ -88,3 +88,24 @@ class TestTodoserver(unittest.TestCase):
     def test_error_when_getting_nonexisting_task(self):
         resp = self.client.get("/tasks/42/")
         self.assertEqual(404, resp.status_code)
+
+    def test_delete_task(self):
+        # create a task
+        new_task_data = {
+            "summary": "Pick up bottled water",
+            "description": "Big green bottle of sparkling water",
+        }
+        resp = self.client.post("/tasks/",
+                                data=json.dumps(new_task_data)
+        )
+        self.assertEqual(201, resp.status_code)
+        task = json_body(resp)
+        task_id = task["id"]
+
+        # delete the task
+        resp = self.client.delete(f"/tasks/{task_id:d}/")   
+        self.assertEqual(200, resp.status_code)
+
+        # verify that task has been deleted
+        resp = self.client.get(f"/tasks/{task_id:d}/")
+        self.assertEqual(404, resp.status_code)

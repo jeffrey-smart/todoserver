@@ -43,3 +43,8 @@ def get_task_details(task_id):
         return make_response("", 404)
 
     return make_response(json.dumps(task_info), 200)
+
+@app.route("/tasks/<int:task_id>/", methods=["DELETE"])
+def delete_task(task_id):
+    app.store.delete_task(task_id)
+    return ""
