@@ -114,4 +114,33 @@ class TestTodoserver(unittest.TestCase):
         # delete the task
         resp = self.client.delete(f"/tasks/42/")   
         self.assertEqual(404, resp.status_code)
+    
+    def test_modify_existing_task(self):
+        # create a task
+        new_task_data = {
+            "summary": "Pick up bottled water",
+            "description": "Big green bottle of sparkling water",
+        }
+        resp = self.client.post("/tasks/",
+                                data=json.dumps(new_task_data)
+        )
+        self.assertEqual(201, resp.status_code)
+        task = json_body(resp)
+        task_id = task["id"]
+
+        # modify (update) the task
+        updated_task_data = {
+            "summary": "Put air in tires",
+            "description": "Inflate to 35 psi",
+        }
+        resp = self.client.put(f"/tasks/{task_id:d}/",
+                               data = json.dumps(updated_task_data))
+        self.assertEqual(200, resp.status_code)
+
+        # check the task -- did we really modify it?
+        resp = self.client.get(f"/tasks/{task_id:d}/")
+        self.assertEqual(200, resp.status_code)
         
+        actual = json_body(resp)
+        self.assertEqual(updated_task_data["summary"], actual["summary"])
+        self.assertEqual(updated_task_data["description"], actual["description"])

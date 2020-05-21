@@ -63,3 +63,12 @@ class TaskStore:
             session.commit()
             deleted = True
         return deleted
+
+    def modify_task(self, task_id, summary, description):
+        session = self.Session()
+        task = session.query(Task).get(task_id)
+        task.summary = summary
+        task.description = description
+        session.add(task)
+        session.commit()
+        
