@@ -6,7 +6,10 @@ venv/
 
 # python
 __pycache__/
+*.pyc
 
 # Visual Studio Code
 .vscode/
 
+# databases
+*.db
